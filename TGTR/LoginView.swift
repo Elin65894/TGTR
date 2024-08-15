@@ -3,7 +3,233 @@
 //  TGTR
 //
 //  Created by Elin.Andersson on 2024-08-14.
+import SwiftUI
+import FirebaseAuth
 
+struct LoginView: View {
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    @State private var isAuthenticated = false
+    @State private var isRegistering = false
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                // Huvudtitel
+                Text("DuoVitamin")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 10)
+                
+                // Undertitel
+                Text(isRegistering ? "Register" : "Login")
+                    .font(.title2)
+                    .foregroundColor(.gray)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 40)
+                
+                TextField("Email", text: $email)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(5.0)
+                    .padding(.bottom, 20)
+                
+                SecureField("Password", text: $password)
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(5.0)
+                    .padding(.bottom, 20)
+                
+                Button(action: {
+                    isRegistering ? register() : login()
+                }) {
+                    Text(isRegistering ? "Register" : "Log In")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(width: 220, height: 60)
+                        .background(Color.blue)
+                        .cornerRadius(15.0)
+                }
+                .alert(isPresented: $showAlert) {
+                    Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                }
+                
+                // Navigation without alert
+                .navigationDestination(isPresented: $isAuthenticated) {
+                    ContentView()
+                }
+                
+                Button(action: {
+                    isRegistering.toggle()
+                }) {
+                    Text(isRegistering ? "Already have an account? Log In" : "Don't have an account? Register")
+                        .foregroundColor(.blue)
+                        .padding(.top, 20)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    func login() {
+        if email.isEmpty || password.isEmpty {
+            alertMessage = "Please enter both email and password."
+            showAlert = true
+        } else {
+            Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+                if let error = error {
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+                } else {
+                    // Navigate directly to ContentView without alert
+                    isAuthenticated = true
+                }
+            }
+        }
+    }
+    
+    func register() {
+        if email.isEmpty || password.isEmpty {
+            alertMessage = "Please enter both email and password."
+            showAlert = true
+        } else {
+            Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                if let error = error {
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+                } else {
+                    // Show alert for successful registration
+                    alertMessage = "Registration successful! You can now log in."
+                    showAlert = true
+                    isRegistering = false
+                }
+            }
+        }
+    }
+}
+
+struct LoginView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginView()
+    }
+}
+
+
+
+/*
+import SwiftUI
+import FirebaseAuth
+
+struct LoginView: View {
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    @State private var isAuthenticated = false
+    @State private var isRegistering = false
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Text(isRegistering ? "Register" : "Login")
+                    .font(.largeTitle)
+                    .padding(.bottom, 40)
+                
+                TextField("Email", text: $email)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(5.0)
+                    .padding(.bottom, 20)
+                
+                SecureField("Password", text: $password)
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(5.0)
+                    .padding(.bottom, 20)
+                
+                Button(action: {
+                    isRegistering ? register() : login()
+                }) {
+                    Text(isRegistering ? "Register" : "Log In")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(width: 220, height: 60)
+                        .background(Color.blue)
+                        .cornerRadius(15.0)
+                }
+                .alert(isPresented: $showAlert) {
+                    Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                }
+                
+                // Navigation without alert
+                .navigationDestination(isPresented: $isAuthenticated) {
+                    ContentView()
+                }
+                
+                Button(action: {
+                    isRegistering.toggle()
+                }) {
+                    Text(isRegistering ? "Already have an account? Log In" : "Don't have an account? Register")
+                        .foregroundColor(.blue)
+                        .padding(.top, 20)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    func login() {
+        if email.isEmpty || password.isEmpty {
+            alertMessage = "Please enter both email and password."
+            showAlert = true
+        } else {
+            Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+                if let error = error {
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+                } else {
+                    // Navigate directly to ContentView without alert
+                    isAuthenticated = true
+                }
+            }
+        }
+    }
+    
+    func register() {
+        if email.isEmpty || password.isEmpty {
+            alertMessage = "Please enter both email and password."
+            showAlert = true
+        } else {
+            Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                if let error = error {
+                    alertMessage = error.localizedDescription
+                    showAlert = true
+                } else {
+                    // Show alert for successful registration
+                    alertMessage = "Registration successful! You can now log in."
+                    showAlert = true
+                    isRegistering = false
+                }
+            }
+        }
+    }
+}
+
+struct LoginView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginView()
+    }
+}
+*/
+/*
 import SwiftUI
 import FirebaseAuth
 
@@ -110,7 +336,7 @@ struct LoginView_Previews: PreviewProvider {
         LoginView()
     }
 }
-
+*/
 
 /*
 import SwiftUI
